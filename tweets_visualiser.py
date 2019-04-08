@@ -12,7 +12,7 @@ from tweepy.streaming import StreamListener
 from tweepy import API
 from Tkinter import *
 import Tkinter as tk
-from PIL import Image, ImageTk
+#from PIL import Image, ImageTk
 from textblob import TextBlob
 import requests
 import csv
@@ -23,14 +23,7 @@ import os
 import time
 import json
 import nltk
-#nltk.download('punkt')
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-import missingno as msno
 
-#import python_serial   #python file for serial communication to arduino
 #import lcd_16x2_1      #python file for gathering input from LCD Raspberry pi
 
 tweets = 0
@@ -38,7 +31,7 @@ hashes  = []
 item = ''
 
 
-arduinoData = serial.Serial('/dev/cu.usbmodem14101', baudrate = 9600, timeout = 1)
+arduinoData = serial.Serial('/dev/ttyACM0', baudrate = 9600, timeout = 1)
 print arduinoData.readline()  
 
 arduinoValues = 3
@@ -89,7 +82,6 @@ class MyListener(StreamListener):
 
             self.fd.flush()
             print values
-            #print("Process finished\n")
 
         except BaseException as e:
             print('Error occurred', e)
@@ -103,7 +95,7 @@ class MyListener(StreamListener):
 
     def on_status(self, status):
         record = {'Text': status.text, 'Created At': status.created_at}
-        print(record) #See Tweepy documentation to learn how to access other fields
+        print(record)
         self.num_tweets += 1
         if self.num_tweets < 10:
             collection.insert(record)
@@ -149,7 +141,6 @@ def check_hashtag(hashtag_entry):
 
 def get_tweets(hashtag_entry):
     print("Searching tweets for %s...\n" %hashtag_entry)
-    #L2['text'] = "Tweets here"
     twitter_stream.filter(track=[hashtag_entry])
 
 
@@ -160,6 +151,9 @@ def format_response(tweet_data): #something wrong here#
 def clear_entry(event, entry):
     entry.delete(0, END)
 
+def close_window():
+	 root.destroy()
+	 
 
 root = tk.Tk()
 root.wm_attributes('-fullscreen','true')
@@ -176,18 +170,17 @@ myframe.config(background="#000000")
 myframe.place(bordermode=INSIDE,relx=0.25,rely=0.25,relwidth=0.5,relheight=0.5)
 #myframe.pack(fill='none')
 
-L1 = tk.Label(myframe, text="Search what's is trending #",bg='#000000', font=("HelveticaNeue Light", 24),pady=10,fg='#ffffff')
+L1 = tk.Label(myframe, text="Search what's trending hashtag",bg='#000000', font=("HelveticaNeue Light", 24),pady=10,fg='#ffffff')
 L1.pack(expand=0)
-#L1.focus_set()
 
-
-E1 = tk.Entry(myframe, bd=0,justify=CENTER,selectborderwidth=20,font=("HelveticaNeueLTStd-Bd", 64),bg='#000000', foreground='#ffffff',borderwidth=0, highlightthickness=0, )
-#E1.insert(0, 'Search')
+E1 = tk.Entry(myframe, bd=0,justify=CENTER,selectborderwidth=100,font=("HelveticaNeueLTStd-Bd", 64),bg='#000000', foreground='#ffffff',borderwidth=0, highlightthickness=0, )
 E1.pack(expand=0, fill='both')
 
+B1 = tk.Button(myframe, text=" Search ", border=0, bd=0, bg='red',font=("Heebo-Regular", 16),foreground='#ffffff', highlightbackground='#000000', command=lambda: get_tweets(E1.get()))
+B1.place(relx=0.45,rely=0.45,relwidth=.1,relheight=.1)
 
-B1 = tk.Button(myframe, text=" Search ", border=0, bd=0, bg='#000000',font=("Heebo-Regular", 16),foreground='blue', highlightbackground='#000000', command=lambda: get_tweets(E1.get()))
-B1.pack(expand=0)
+B2 = tk.Button(myframe, text=" Exit ", border=0, bd=0, bg='#000000',font=("Heebo-Regular", 16),foreground='#ffffff', highlightbackground='red', command=close_window)
+B2.place(relx=0.45,rely=0.60,relwidth=.1,relheight=.1)
 
 #output_frame = Frame(myframe,bg='red')
 #output_frame.place(relx=1,rely=0.8,relwidth=1,relheight=1,anchor='e')
